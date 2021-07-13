@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{F0FDED83-4891-9A60-273A-8A9570FDD786}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "TopDown_UE4",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	]
+}
