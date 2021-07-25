@@ -25,4 +25,6 @@ void UTDBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	UCharacterMovementComponent* CharacterMovement = CachedBaseCharacter->GetCharacterMovement();
 	Speed = CharacterMovement->Velocity.Size();
 	bIsFalling = CharacterMovement->IsFalling();
+	bIsStrafing = !CharacterMovement->bOrientRotationToMovement;
+	Direction = CalculateDirection(CharacterMovement->Velocity, CachedBaseCharacter->GetActorRotation());
 }
