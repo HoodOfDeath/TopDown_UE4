@@ -2,6 +2,8 @@
 
 
 #include "PlayerCharacter.h"
+
+#include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -29,8 +31,6 @@ void APlayerCharacter::MoveForward(float Value)
 {
 	if ((GetCharacterMovement()->IsMovingOnGround() || GetCharacterMovement()->IsFalling()) && !FMath::IsNearlyZero(Value, 1E-6f))
 	{
-		//FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-		//FVector ForwardVector = YawRotator.RotateVector(FVector::ForwardVector);
 		AddMovementInput(FVector::ForwardVector, Value);
 	}
 }
@@ -39,9 +39,25 @@ void APlayerCharacter::MoveRight(float Value)
 {
 	if ((GetCharacterMovement()->IsMovingOnGround() || GetCharacterMovement()->IsFalling()) && !FMath::IsNearlyZero(Value, 1E-6f))
 	{
-		//FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-		//FVector RightVector = YawRotator.RotateVector(FVector::RightVector);
 		AddMovementInput(FVector::RightVector, Value);
+	}
+}
+
+void APlayerCharacter::MoveForwardStick(float Value)
+{
+	if ((GetCharacterMovement()->IsMovingOnGround() || GetCharacterMovement()->IsFalling()) && !FMath::IsNearlyZero(Value, 1E-6f))
+	{
+		FQuat Rot = FQuat::MakeFromEuler(FVector::UpVector * -29);
+		AddMovementInput(Rot * FVector::ForwardVector, Value);
+	}
+}
+
+void APlayerCharacter::MoveRightStick(float Value)
+{
+	if ((GetCharacterMovement()->IsMovingOnGround() || GetCharacterMovement()->IsFalling()) && !FMath::IsNearlyZero(Value, 1E-6f))
+	{
+		FQuat Rot = FQuat::MakeFromEuler(FVector::UpVector * -29);
+		AddMovementInput(Rot * FVector::RightVector, Value);
 	}
 }
 
@@ -81,35 +97,76 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UE_LOG(LogTemp, Log, TEXT("MouseShift %s"), *MouseShift.ToString())
-	
 	if (LookDirection != FVector::ZeroVector)
 	{
-		SetActorRotation(LookDirection.Rotation());
+		FQuat Rot = FQuat::MakeFromEuler(FVector::UpVector * -29);
+		SetActorRotation((Rot * LookDirection).Rotation());
+		LookDirection.Y *= (250 - 23 * LookDirection.X);
+		LookDirection.X *= 180;
+		LookDirection = Rot * LookDirection;
+
+		SpringArmComponent->TargetOffset = FMath::VInterpTo(SpringArmComponent->TargetOffset, LookDirection, DeltaSeconds, 3.f);
 	}
 	else if (MouseShift != FVector::ZeroVector)
 	{
 		if (APlayerController* PC = Cast<APlayerController>(GetController()))
 		{
-			float x, y;
-
-			PC->GetMousePosition(x, y);
-
-			FVector2D MousePos(x, y);
-
-			FVector2D Viewport(1, 1);
-
-			if (GEngine && GEngine->GameViewport)
+			FVector MousePositionInWorld, MouseDirection;
+			FVector Res;
+			if (PC->DeprojectMousePositionToWorld(MousePositionInWorld, MouseDirection))
 			{
-				GEngine->GameViewport->GetViewportSize(/*out*/Viewport);
+				FVector PlayerLocation = GetActorLocation();
+				FVector Proj = FMath::LinePlaneIntersection(MousePositionInWorld, MousePositionInWorld + MouseDirection, PlayerLocation, FVector::UpVector);
+
+				Res = Proj - PlayerLocation;
+				Res.Z = 0;
+
+				FVector2D MousePosOnScreen(0, 0);
+				PC->GetMousePosition(MousePosOnScreen.X, MousePosOnScreen.Y);
+
+				FVector2D Viewport(1, 1);
+				if (GEngine && GEngine->GameViewport)
+				{
+					GEngine->GameViewport->GetViewportSize(/*out*/Viewport);
+				}
+
+				FVector2D Result((Viewport - MousePosOnScreen) - Viewport * 0.5f);
+				Result.X /= (Viewport.X * 0.5f);
+				Result.Y /= (Viewport.Y * 0.5f);
+				Result.X *= (250 - 23 * Result.Y);
+				Result.Y *= 180;
+				FVector Tmp = FVector(Result.Y, -Result.X, 0);
+				FQuat Rot = FQuat::MakeFromEuler(FVector::UpVector * -29);
+				Tmp = Rot * Tmp;
+
+				SpringArmComponent->TargetOffset = Tmp;
+			}
+			else
+			{
+				FVector2D MousePosOnScreen(0, 0);
+
+				PC->GetMousePosition(MousePosOnScreen.X, MousePosOnScreen.Y);
+
+				FVector2D Viewport(1, 1);
+
+				if (GEngine && GEngine->GameViewport)
+				{
+					GEngine->GameViewport->GetViewportSize(/*out*/Viewport);
+				}
+
+				FVector2D Result((Viewport - MousePosOnScreen) - Viewport * 0.5f);
+				Res = FVector(Result.Y, -Result.X, 0);
 			}
 
-			FVector2D Result((Viewport - MousePos) - Viewport * 0.5f);
-			FVector Res(Result.Y, -Result.X, 0);
 
 			SetActorRotation(Res.Rotation());
 		}
 	}
+
+	FVector LineStart = GetActorLocation();
+	FVector LineEnd = LineStart + GetActorForwardVector() * 10000;
+
+	DrawDebugLine(GetWorld(), LineStart, LineEnd, FColor::Red);
 
 	LookDirection = FVector::ZeroVector;
 	MouseShift = FVector::ZeroVector;

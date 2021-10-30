@@ -15,6 +15,8 @@ public:
 	
 	virtual void MoveForward(float Value) override;
 	virtual void MoveRight(float Value) override;
+	virtual void MoveForwardStick(float Value) override;
+	virtual void MoveRightStick(float Value) override;
 	virtual void LookUp(float Value) override;
 	virtual void LookRight(float Value) override;
 	virtual void MouseUp(float Value) override;

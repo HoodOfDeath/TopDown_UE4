@@ -22,6 +22,14 @@ public:
 	{
 	};
 
+	virtual void MoveForwardStick(float Value)
+	{
+	};
+
+	virtual void MoveRightStick(float Value)
+	{
+	};
+
 	virtual void LookUp(float Value)
 	{
 	};
