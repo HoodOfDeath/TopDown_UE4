@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 
 #include "DrawDebugHelpers.h"
+#include "Actors/TDProjectile.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -25,6 +26,16 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	CameraComponent->bUsePawnControlRotation = false;
+
+	MuzzlePoint = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle location"));
+	MuzzlePoint->SetupAttachment(RootComponent);
+}
+
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	DelayBetweenShots = 60.0f / FireRate;
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -93,12 +104,52 @@ void APlayerCharacter::MouseRight(float Value)
 	}
 }
 
+void APlayerCharacter::StartFiring()
+{
+	bIntendToShoot = true;
+}
+
+void APlayerCharacter::StopFiring()
+{
+	bIntendToShoot = false;
+}
+
+void APlayerCharacter::HoldDash()
+{
+}
+
+void APlayerCharacter::ReleaseDash()
+{
+}
+
+void APlayerCharacter::HoldChargedShot()
+{
+}
+
+void APlayerCharacter::ReleaseChargedShot()
+{
+}
+
+void APlayerCharacter::Parry()
+{
+}
+
+void APlayerCharacter::HoldSlash()
+{
+}
+
+void APlayerCharacter::ReleaseSlash()
+{
+}
+
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	if (LookDirection != FVector::ZeroVector)
 	{
+		Fire();
+		
 		FQuat Rot = FQuat::MakeFromEuler(FVector::UpVector * -29);
 		SetActorRotation((Rot * LookDirection).Rotation());
 		LookDirection.Y *= (250 - 23 * LookDirection.X);
@@ -163,6 +214,11 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		}
 	}
 
+	if (bIntendToShoot)
+	{
+		Fire();
+	}
+
 	FVector LineStart = GetActorLocation();
 	FVector LineEnd = LineStart + GetActorForwardVector() * 10000;
 
@@ -170,4 +226,32 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 	LookDirection = FVector::ZeroVector;
 	MouseShift = FVector::ZeroVector;
+}
+
+void APlayerCharacter::Fire()
+{
+	if (CanFire())
+	{
+		if (ProjectileClass != nullptr)
+		{
+			UWorld* const World = GetWorld();
+
+			if (World != nullptr)
+			{
+				const FVector WorldMuzzlePosition = MuzzlePoint->GetComponentLocation();
+				UE_LOG(LogTemp, Warning, TEXT("MuzzlePoint %s"), *WorldMuzzlePosition.ToString())
+
+				World->SpawnActor<ATDProjectile>(ProjectileClass, WorldMuzzlePosition, GetActorRotation());
+
+				bIsShotReady = false;
+
+				World->GetTimerManager().SetTimer(FiringDelay, this, &APlayerCharacter::SetShotReady, DelayBetweenShots, false);
+			}
+		}
+	}
+}
+
+bool APlayerCharacter::CanFire()
+{
+	return bIsShotReady;
 }

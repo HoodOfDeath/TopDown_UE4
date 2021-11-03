@@ -46,6 +46,47 @@ public:
 	{
 	};
 
+	//2) Shooting
+	virtual void StartFiring()
+	{
+	};
+
+	virtual void StopFiring()
+	{
+	};
+
+	//3) Dash
+	virtual void HoldDash()
+	{
+	};
+	
+	virtual void ReleaseDash()
+	{
+	};
+	
+	//4) Charged shot
+	virtual void HoldChargedShot()
+	{
+	};
+	
+	virtual void ReleaseChargedShot()
+	{
+	};
+
+	//5) Parry
+	virtual void Parry()
+	{
+	};
+
+	//6/7) Melee slash / charged slash
+	virtual void HoldSlash()
+	{
+	};
+	
+	virtual void ReleaseSlash()
+	{
+	};
+
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Character|Controls")
 	float BaseTurnRate = 45.0f;

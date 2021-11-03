@@ -30,13 +30,37 @@ private:
 
 	void CreateAndInitializeWidgets();
 
+	//1) Movement
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void MoveForwardStick(float Value);
 	void MoveRightStick(float Value);
+
+	//2) Shooting
 	void LookUp(float Value);
 	void LookRight(float Value);
 	void MouseUp(float Value);
 	void MouseRight(float Value);
+	
+	void HoldFire();
+	void ReleaseFire();
+
+	//3) Dash
+	void HoldDash();
+	void ReleaseDash();
+	
+	//4) Charged shot
+	void HoldChargedShot();
+	void ReleaseChargedShot();
+
+	//5) Parry
+	void Parry();
+
+	//6/7) Melee slash / charged slash
+	void HoldSlash();
+	void ReleaseSlash();
+	
 	void Jump();
+
+	
 };

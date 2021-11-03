@@ -26,10 +26,26 @@ void ATDPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRight", this, &ATDPlayerController::MoveRight);
 	InputComponent->BindAxis("MoveForwardStick", this, &ATDPlayerController::MoveForwardStick);
 	InputComponent->BindAxis("MoveRightStick", this, &ATDPlayerController::MoveRightStick);
+	
 	InputComponent->BindAxis("LookUp", this, &ATDPlayerController::LookUp);
 	InputComponent->BindAxis("LookRight", this, &ATDPlayerController::LookRight);
 	InputComponent->BindAxis("MouseUp", this, &ATDPlayerController::MouseUp);
 	InputComponent->BindAxis("MouseRight", this, &ATDPlayerController::MouseRight);
+
+	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &ATDPlayerController::HoldFire);
+	InputComponent->BindAction("Fire", EInputEvent::IE_Released, this, &ATDPlayerController::ReleaseFire);
+
+	InputComponent->BindAction("Dash", EInputEvent::IE_Pressed, this, &ATDPlayerController::HoldDash);
+	InputComponent->BindAction("Dash", EInputEvent::IE_Released, this, &ATDPlayerController::ReleaseDash);
+	
+	InputComponent->BindAction("ChargedShot", EInputEvent::IE_Pressed, this, &ATDPlayerController::HoldChargedShot);
+	InputComponent->BindAction("ChargedShot", EInputEvent::IE_Released, this, &ATDPlayerController::ReleaseChargedShot);
+
+	InputComponent->BindAction("Parry", EInputEvent::IE_Pressed, this, &ATDPlayerController::Parry);
+	
+	InputComponent->BindAction("Slash", EInputEvent::IE_Pressed, this, &ATDPlayerController::HoldSlash);
+	InputComponent->BindAction("Slash", EInputEvent::IE_Released, this, &ATDPlayerController::ReleaseSlash);
+	
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ATDPlayerController::Jump);
 }
 
@@ -107,6 +123,79 @@ void ATDPlayerController::MouseRight(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->MouseRight(Value);
+	}
+}
+
+void ATDPlayerController::HoldFire()
+{
+	UE_LOG(LogTemp, Log, TEXT("Fire"))
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->StartFiring();
+	}
+}
+
+void ATDPlayerController::ReleaseFire()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->StopFiring();
+	}
+}
+
+void ATDPlayerController::HoldDash()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->HoldDash();
+	}
+}
+
+void ATDPlayerController::ReleaseDash()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ReleaseDash();
+	}
+}
+
+void ATDPlayerController::HoldChargedShot()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->HoldChargedShot();
+	}
+}
+
+void ATDPlayerController::ReleaseChargedShot()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ReleaseChargedShot();
+	}
+}
+
+void ATDPlayerController::Parry()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Parry();
+	}
+}
+
+void ATDPlayerController::HoldSlash()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->HoldSlash();
+	}
+}
+
+void ATDPlayerController::ReleaseSlash()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ReleaseSlash();
 	}
 }
 
